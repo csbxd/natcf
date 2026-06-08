@@ -3,9 +3,11 @@ package natcf
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/netip"
+	"strings"
 	"sync/atomic"
 	"testing"
 )
@@ -100,5 +102,12 @@ func TestSyncUpdatesAAAA(t *testing.T) {
 	})
 	if err := c.Sync(context.Background(), netip.MustParseAddrPort("[2001:db8::1]:443")); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestReadResponseBodyTooLarge(t *testing.T) {
+	_, err := readResponseBody(strings.NewReader(strings.Repeat("x", maxResponseBodySize+1)), -1, maxResponseBodySize, nil)
+	if !errors.Is(err, errResponseBodyTooLarge) {
+		t.Fatalf("got %v; want %v", err, errResponseBodyTooLarge)
 	}
 }
