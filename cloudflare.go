@@ -131,11 +131,11 @@ func (c *Client) doJSON(ctx context.Context, method, path string, body any) erro
 }
 
 func (c *Client) doJSONOnce(ctx context.Context, method, path string, body any) error {
-	var b bytes.Buffer
-	if err := json.NewEncoder(&b).Encode(body); err != nil {
+	b, err := json.Marshal(body)
+	if err != nil {
 		return err
 	}
-	req, err := http.NewRequestWithContext(ctx, method, c.cfg.APIBase+path, &b)
+	req, err := http.NewRequestWithContext(ctx, method, c.cfg.APIBase+path, bytes.NewReader(b))
 	if err != nil {
 		return err
 	}
